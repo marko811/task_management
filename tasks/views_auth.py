@@ -33,13 +33,16 @@ class RegisterView(generics.CreateAPIView):
             required=["username", "email", "password"],
             properties={
                 "username": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User's username (User ID)"
+                    type=openapi.TYPE_STRING,
+                    description="User's username (User ID)",
                 ),
                 "email": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User's email address "
+                    type=openapi.TYPE_STRING,
+                    description="User's email address",
                 ),
                 "password": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User's password"
+                    type=openapi.TYPE_STRING,
+                    description="User's password",
                 ),
             },
             example={
@@ -51,6 +54,19 @@ class RegisterView(generics.CreateAPIView):
         responses={
             201: openapi.Response(
                 description="New user successfully registered.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "username": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="User's username",
+                        ),
+                        "email": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="User's email address",
+                        ),
+                    },
+                ),
                 examples={
                     "application/json": {
                         "username": "johndoe",
@@ -84,10 +100,12 @@ class LoginView(TokenObtainPairView):
             required=["username", "password"],
             properties={
                 "username": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User's username"
+                    type=openapi.TYPE_STRING,
+                    description="User's username",
                 ),
                 "password": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="User's password"
+                    type=openapi.TYPE_STRING,
+                    description="User's password",
                 ),
             },
             example={"username": "johndoe", "password": "yourpassword"},
@@ -95,6 +113,19 @@ class LoginView(TokenObtainPairView):
         responses={
             200: openapi.Response(
                 description="A user successfully logged in.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "access": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Access token",
+                        ),
+                        "refresh": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Refresh token",
+                        ),
+                    },
+                ),
                 examples={
                     "application/json": {
                         "access": "eyJ0eXAiOiJKV1QiLCJhb...",
@@ -129,7 +160,8 @@ class UserTokenRefreshView(TokenRefreshView):
             required=["refresh"],
             properties={
                 "refresh": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="JWT refresh token"
+                    type=openapi.TYPE_STRING,
+                    description="JWT refresh token",
                 ),
             },
             example={"refresh": "eyKV1QiLCJhbdsUzI1NiJ9..."},
@@ -137,6 +169,15 @@ class UserTokenRefreshView(TokenRefreshView):
         responses={
             200: openapi.Response(
                 description="Returned a new access token.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        "access": openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Access token",
+                        ),
+                    },
+                ),
                 examples={
                     "application/json": {
                         "access": "eyJ0eXAiOiJKV1QiLCJhb...",
@@ -168,13 +209,19 @@ class LogoutView(TokenBlacklistView):
             required=["refresh"],
             properties={
                 "refresh": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="JWT refresh token"
+                    type=openapi.TYPE_STRING,
+                    description="JWT refresh token",
                 ),
             },
             example={"refresh": "eyKV1QiLCJhbdsUzI1NiJ9..."},
         ),
         responses={
-            200: "Logged out successfully",
+            200: openapi.Response(
+                description="Logged out successfully",
+                examples={
+                    "text/html": "Logged out successfully",
+                },
+            ),
             400: "Bad Request",
             401: "Unauthorize",
         },

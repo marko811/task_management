@@ -12,6 +12,53 @@ from .models import Task
 from .notifications import send_task_notification
 from .serializers import TaskSerializer
 
+task_schema = openapi.Schema(
+    type=openapi.TYPE_OBJECT,
+    properties={
+        "id": openapi.Schema(
+            type=openapi.TYPE_INTEGER,
+            description="ID of the task",
+        ),
+        "title": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            description="Title of the task",
+        ),
+        "description": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            description="Detailed description of the task",
+        ),
+        "status": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            enum=["pending", "in_progress", "completed"],
+            description="Status of the task",
+        ),
+        "owner": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            description="Username of the owner",
+        ),
+        "assignee": openapi.Schema(
+            type=openapi.TYPE_INTEGER,
+            nullable=True,
+            description="User ID of the assignee",
+        ),
+        "due_date": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_DATETIME,
+            description="Due date of the task",
+        ),
+        "created_at": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_DATETIME,
+            description="Created timestamp of the task",
+        ),
+        "updated_at": openapi.Schema(
+            type=openapi.TYPE_STRING,
+            format=openapi.FORMAT_DATETIME,
+            description="Updated timestamp of the task",
+        ),
+    },
+)
+
 
 # List and create tasks
 class TaskListCreateView(generics.ListCreateAPIView):
@@ -73,6 +120,10 @@ class TaskListCreateView(generics.ListCreateAPIView):
         responses={
             200: openapi.Response(
                 description="A list of tasks.",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=task_schema,
+                ),
                 examples={
                     "application/json": [
                         {
@@ -115,7 +166,8 @@ class TaskListCreateView(generics.ListCreateAPIView):
             required=["title", "description"],
             properties={
                 "title": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Title of the task"
+                    type=openapi.TYPE_STRING,
+                    description="Title of the task",
                 ),
                 "description": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -127,7 +179,8 @@ class TaskListCreateView(generics.ListCreateAPIView):
                     enum=["pending", "in_progress", "completed"],
                 ),
                 "assignee": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="User ID of the assignee"
+                    type=openapi.TYPE_INTEGER,
+                    description="User ID of the assignee",
                 ),
                 "due_date": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -146,6 +199,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
         responses={
             201: openapi.Response(
                 description="Task created successfully",
+                schema=task_schema,
                 examples={
                     "application/json": {
                         "id": 1,
@@ -173,10 +227,7 @@ class TaskListCreateView(generics.ListCreateAPIView):
 
     # Get filtered tasks for staff or individual users
     def get_queryset(self):
-        user = self.request.user
-        return Task.objects.not_deleted().filter(
-            models.Q(owner=user) | models.Q(assignee=user)
-        )
+        return Task.objects.not_deleted()
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -207,6 +258,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
         responses={
             200: openapi.Response(
                 description="Details of the task.",
+                schema=task_schema,
                 examples={
                     "application/json": {
                         "id": 1,
@@ -238,7 +290,8 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
             required=["title", "description"],
             properties={
                 "title": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Title of the task"
+                    type=openapi.TYPE_STRING,
+                    description="Title of the task",
                 ),
                 "description": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -250,7 +303,8 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
                     enum=["pending", "in_progress", "completed"],
                 ),
                 "assignee": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="User ID of the assignee"
+                    type=openapi.TYPE_INTEGER,
+                    description="User ID of the assignee",
                 ),
                 "due_date": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -269,6 +323,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
         responses={
             200: openapi.Response(
                 description="Task updated successfully",
+                schema=task_schema,
                 examples={
                     "application/json": {
                         "id": 1,
@@ -300,7 +355,8 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
             type=openapi.TYPE_OBJECT,
             properties={
                 "title": openapi.Schema(
-                    type=openapi.TYPE_STRING, description="Title of the task"
+                    type=openapi.TYPE_STRING,
+                    description="Title of the task",
                 ),
                 "description": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -312,7 +368,8 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
                     enum=["pending", "in_progress", "completed"],
                 ),
                 "assignee": openapi.Schema(
-                    type=openapi.TYPE_INTEGER, description="User ID of the assignee"
+                    type=openapi.TYPE_INTEGER,
+                    description="User ID of the assignee",
                 ),
                 "due_date": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -325,6 +382,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
         responses={
             200: openapi.Response(
                 description="Task updated successfully",
+                schema=task_schema,
                 examples={
                     "application/json": {
                         "id": 1,
@@ -368,10 +426,7 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     # End --- API Documentation
 
     def get_queryset(self):
-        user = self.request.user
-        if user.is_staff:
-            return Task.objects.not_deleted()
-        return Task.objects.not_deleted().filter(owner=user.id)
+        return Task.objects.not_deleted()
 
     def perform_update(self, serializer):
         user = self.request.user
